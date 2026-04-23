@@ -18,7 +18,7 @@ public class UserApplicationMapper {
   public static UserModel fromCreateCommandToModel(final CreateUserCommand command) {
     final String userId    = command.id();
     final String userName  = command.name();
-    final String userEmail = command.email(); // ✅ Regla 24: nombre consistente
+    final String userEmail = command.email(); //  Regla 24: nombre consistente
     final String userPass  = command.password();
     final String userRole  = command.role();
 
@@ -40,7 +40,7 @@ public class UserApplicationMapper {
       passwordToUse = UserPassword.fromPlainText(command.password());
     }
 
-    final String userEmail = command.email(); // ✅ Regla 24: mismo nombre que arriba
+    final String userEmail = command.email(); //  Regla 24: mismo nombre que arriba
 
     return new UserModel(
             new UserId(command.id()),
@@ -59,7 +59,7 @@ public class UserApplicationMapper {
     return new UserId(command.id());
   }
 
-  // ✅ Regla 21: se lanza excepción en lugar de retornar -1 como bandera de error
+  //  Regla 21: se lanza excepción en lugar de retornar -1 como bandera de error
   public static int roleToCode(final String role) {
     if (Objects.isNull(role) || role.isBlank()) {
       throw new IllegalArgumentException("Role must not be null or blank");
