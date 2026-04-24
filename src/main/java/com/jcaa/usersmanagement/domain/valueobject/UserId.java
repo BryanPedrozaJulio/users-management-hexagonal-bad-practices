@@ -6,7 +6,7 @@ import java.util.Objects;
 public record UserId(String value) {
 
   public UserId {
-    // ✅ Regla 4: reemplazado == null por Objects.requireNonNull()
+    // Regla 4: reemplazado == null por Objects.requireNonNull()
     Objects.requireNonNull(value, "UserId cannot be null");
     final String normalizedValue = value.trim();
     validateNotEmpty(normalizedValue);
