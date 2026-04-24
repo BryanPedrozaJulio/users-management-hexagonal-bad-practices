@@ -16,108 +16,69 @@ import com.jcaa.usersmanagement.infrastructure.adapter.persistence.mapper.UserPe
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 
-// VIOLACIÓN Regla 4: import con wildcard (*) — se deben declarar imports específicos,
-// nunca usar comodines porque ocultan qué clases se están usando realmente.
+// ✅ Regla 4: imports específicos en lugar de wildcard java.util.*
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Log
 @RequiredArgsConstructor
 public final class UserRepositoryMySQL
-    implements SaveUserPort,
+        implements SaveUserPort,
         UpdateUserPort,
         GetUserByIdPort,
         GetUserByEmailPort,
         GetAllUsersPort,
         DeleteUserPort {
 
-  // VIOLACIÓN Regla 4 (consecuencia): el mapper ya no es @UtilityClass,
-  // por lo que se instancia directamente aquí en vez de usarse como clase utilitaria.
-  private final UserPersistenceMapper persistenceMapper = new UserPersistenceMapper();
-
   private static final String SQL_INSERT =
-      "INSERT INTO users "
-      + "(id, name, email, password, role, status, created_at, updated_at) "
-      + "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
+          "INSERT INTO users "
+                  + "(id, name, email, password, role, status, created_at, updated_at) "
+                  + "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
   private static final String SQL_UPDATE =
-      "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status = ?, updated_at = NOW() "
-      + "WHERE id = ?";
+          "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status = ?, updated_at = NOW() "
+                  + "WHERE id = ?";
 
   private static final String SQL_SELECT_BY_ID =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
-      + "FROM users "
-      + "WHERE id = ? LIMIT 1";
+          "SELECT id, name, email, password, role, status, created_at, updated_at "
+                  + "FROM users "
+                  + "WHERE id = ? LIMIT 1";
 
   private static final String SQL_SELECT_BY_EMAIL =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
-      + "FROM users "
-      + "WHERE email = ? LIMIT 1";
+          "SELECT id, name, email, password, role, status, created_at, updated_at "
+                  + "FROM users "
+                  + "WHERE email = ? LIMIT 1";
 
   private static final String SQL_SELECT_ALL =
-      "SELECT id, name, email, password, role, status, created_at, updated_at "
-      + "FROM users "
-      + "ORDER BY name ASC";
+          "SELECT id, name, email, password, role, status, created_at, updated_at "
+                  + "FROM users "
+                  + "ORDER BY name ASC";
 
   private static final String SQL_DELETE =
-        "DELETE FROM users "
-        + "WHERE id = ?";
+          "DELETE FROM users "
+                  + "WHERE id = ?";
 
   private final Connection connection;
 
-  // Clean Code - Regla 19 (temporal coupling): se agrega un flag de inicialización.
-  // El consumidor DEBE llamar a init() antes de usar el repositorio, pero el diseño
-  // no lo hace evidente ni lo encapsula — se llama a métodos en orden implícito frágil.
-  // Si alguien usa el repositorio sin llamar init() el comportamiento es impredecible.
-  private boolean initialized = false;
-
-  // Clean Code - Regla 19: si el orden init() → operaciones es obligatorio, el diseño
-  // debería proteger al consumidor encapsulando ese orden. Ahora es fácil usarlo mal:
-  //   service.init();
-  //   service.load();
-  //   service.process(); // ← ¿qué pasa si alguien llama esto sin init() primero?
-  public void init() {
-    this.initialized = true;
-  }
+  // ✅ Regla 4: UserPersistenceMapper es @UtilityClass — se usa directamente sin instanciar
+  // ✅ Regla 19: eliminados initialized y init() — no hay temporal coupling
+  // ✅ Regla 5: eliminado saveWithFields() con parámetros primitivos sueltos
+  // ✅ Regla 10: eliminados comentarios redundantes
 
   @Override
   public UserModel save(final UserModel user) {
-    // Clean Code - Regla 10: comentarios redundantes que repiten lo que ya dice el código.
-    // transformar el modelo de dominio a DTO de persistencia
-    final UserPersistenceDto dto = persistenceMapper.fromModelToDto(user);
-    // ejecutar la consulta de inserción en la base de datos
+    final UserPersistenceDto dto = UserPersistenceMapper.fromModelToDto(user);
     executeSave(dto);
-    // buscar y retornar el usuario recién guardado
     return findByIdOrFail(user.getId());
-  }
-
-  // Clean Code - Regla 5 (pocos parámetros): método alternativo de guardado que recibe
-  // cada campo como parámetro primitivo separado en vez de encapsularlos en un objeto.
-  // La regla dice: si una función necesita muchos datos relacionados, encapsúlalos en un objeto.
-  // createUser(String name, String email, ...) es señal clara de diseño mejorable.
-  public UserModel saveWithFields(
-      final String id,
-      final String name,
-      final String email,
-      final String password,
-      final String role,
-      final String status) {
-    // Clean Code - Regla 10: comentario redundante — la línea siguiente ya es clara.
-    // verificar que todos los parámetros tengan valor
-    if (id == null || name == null || email == null || password == null || role == null || status == null) {
-      throw new IllegalArgumentException("Todos los campos son obligatorios");
-    }
-    // Clean Code - Regla 10: otro comentario redundante.
-    // construir y guardar el modelo
-    throw new UnsupportedOperationException("Usar save(UserModel) en su lugar.");
   }
 
   @Override
   public UserModel update(final UserModel user) {
-    final UserPersistenceDto dto = persistenceMapper.fromModelToDto(user);
+    final UserPersistenceDto dto = UserPersistenceMapper.fromModelToDto(user);
     executeUpdate(dto);
     return findByIdOrFail(user.getId());
   }
@@ -130,7 +91,7 @@ public final class UserRepositoryMySQL
       if (!resultSet.next()) {
         return Optional.empty();
       }
-      return Optional.of(persistenceMapper.fromResultSetToModel(resultSet));
+      return Optional.of(UserPersistenceMapper.fromResultSetToModel(resultSet));
     } catch (final SQLException exception) {
       throw PersistenceException.becauseFindByIdFailed(userId.value(), exception);
     }
@@ -144,7 +105,7 @@ public final class UserRepositoryMySQL
       if (!resultSet.next()) {
         return Optional.empty();
       }
-      return Optional.of(persistenceMapper.fromResultSetToModel(resultSet));
+      return Optional.of(UserPersistenceMapper.fromResultSetToModel(resultSet));
     } catch (final SQLException exception) {
       throw PersistenceException.becauseFindByEmailFailed(email.value(), exception);
     }
@@ -154,7 +115,7 @@ public final class UserRepositoryMySQL
   public List<UserModel> getAll() {
     try (final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_ALL)) {
       final ResultSet resultSet = statement.executeQuery();
-      return persistenceMapper.fromResultSetToModelList(resultSet);
+      return UserPersistenceMapper.fromResultSetToModelList(resultSet);
     } catch (final SQLException exception) {
       throw PersistenceException.becauseFindAllFailed(exception);
     }
@@ -200,6 +161,6 @@ public final class UserRepositoryMySQL
 
   private UserModel findByIdOrFail(final UserId userId) {
     return getById(userId)
-        .orElseThrow(() -> UserNotFoundException.becauseIdWasNotFound(userId.value()));
+            .orElseThrow(() -> UserNotFoundException.becauseIdWasNotFound(userId.value()));
   }
 }
