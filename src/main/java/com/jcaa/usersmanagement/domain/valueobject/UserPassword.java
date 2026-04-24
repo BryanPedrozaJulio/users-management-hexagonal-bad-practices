@@ -78,4 +78,11 @@ public final class UserPassword {
     }
   }
 
+  // Regla 13 y 18: validación de contraseña con constante en su value object
+  private static final int MIN_LENGTH = 8;
+
+  public static boolean isValidFormat(final String password) {
+    return password != null && password.length() >= MIN_LENGTH;
+  }
+
 }

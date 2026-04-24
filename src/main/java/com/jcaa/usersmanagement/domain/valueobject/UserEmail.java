@@ -30,6 +30,14 @@ public record UserEmail(String value) {
     value = normalizedValue;
   }
 
+  // Regla 11: validación de email centralizada en su value object
+  public static boolean isValidFormat(final String email) {
+    if (email == null || email.isBlank()) {
+      return false;
+    }
+    return email.contains("@") && email.contains(".");
+  }
+
   private static void validateNotEmpty(final String normalizedValue) {
     if (normalizedValue.isEmpty()) {
       throw InvalidUserEmailException.becauseValueIsEmpty();

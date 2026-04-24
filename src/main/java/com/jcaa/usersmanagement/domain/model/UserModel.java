@@ -40,6 +40,21 @@ public class UserModel {
     return new UserModel(id, name, email, password, role, UserStatus.PENDING);
   }
 
+  // Regla 13: isUserActive pertenece al modelo de dominio
+  public boolean isAllowedToLogin() {
+    return this.status == UserStatus.ACTIVE;
+  }
+
+  // Regla 13: isAdmin pertenece al modelo de dominio
+  public boolean isAdmin() {
+    return this.role == UserRole.ADMIN;
+  }
+
+  // Regla 14: passwordMatches delega al value object sin exponer internals
+  public boolean passwordMatches(final String plainPassword) {
+    return this.password.verifyPlain(plainPassword);
+  }
+
   public UserModel activate() {
     return new UserModel(id, name, email, password, role, UserStatus.ACTIVE);
   }
