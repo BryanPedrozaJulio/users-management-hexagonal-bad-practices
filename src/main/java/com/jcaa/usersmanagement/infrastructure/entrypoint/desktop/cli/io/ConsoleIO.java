@@ -7,25 +7,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ConsoleIO {
 
+  // Regla 10: mensajes extraídos a constantes con nombre descriptivo
+  private static final String MSG_VALUE_CANNOT_BE_BLANK = "  Value cannot be blank. Please try again.";
+  private static final String MSG_INVALID_NUMBER_INPUT  = "  Invalid input. Please enter a number.";
+
   private final Scanner scanner;
   private final PrintStream out;
 
   public String readRequired(final String prompt) {
-    // VIOLACIÓN Regla 4: nombre abreviado "v" en lugar del nombre descriptivo "value".
-    // Clean Code - Regla 24 (consistencia semántica):
-    // El mismo concepto —"entrada del usuario leída de consola"— se llama "v" aquí
-    // y "r" en readInt(), dentro de la misma clase. Nombres distintos para el mismo
-    // concepto hacen que el lector asuma incorrectamente que son ideas diferentes.
-    String v;
+    // Regla 4 y Regla 24: renombrado "v" → "value" — nombre descriptivo y consistente
+    String value;
     do {
       out.print(prompt);
-      v = scanner.nextLine().trim();
-      if (v.isBlank()) {
-        // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-        out.println("  Value cannot be blank. Please try again.");
+      value = scanner.nextLine().trim();
+      if (value.isBlank()) {
+        out.println(MSG_VALUE_CANNOT_BE_BLANK);
       }
-    } while (v.isBlank());
-    return v;
+    } while (value.isBlank());
+    return value;
   }
 
   public String readOptional(final String prompt) {
@@ -36,13 +35,12 @@ public final class ConsoleIO {
   public int readInt(final String prompt) {
     while (true) {
       out.print(prompt);
-      // VIOLACIÓN Regla 4: nombre abreviado "r" en lugar del nombre descriptivo "rawInput".
-      final String r = scanner.nextLine().trim();
+      // Regla 4 y Regla 24: renombrado "r" → "value" — nombre descriptivo y consistente
+      final String value = scanner.nextLine().trim();
       try {
-        return Integer.parseInt(r);
+        return Integer.parseInt(value);
       } catch (final NumberFormatException ignored) {
-        // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-        out.println("  Invalid input. Please enter a number.");
+        out.println(MSG_INVALID_NUMBER_INPUT);
       }
     }
   }
