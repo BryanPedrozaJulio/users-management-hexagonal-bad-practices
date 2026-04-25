@@ -2,13 +2,15 @@ package com.jcaa.usersmanagement.infrastructure.config;
 
 public final class ConfigurationException extends RuntimeException {
 
+  // Regla 10: texto extraído a constante con nombre descriptivo
+  private static final String MSG_LOAD_FAILED =
+          "Failed to load the application configuration.";
+
   private ConfigurationException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
   public static ConfigurationException becauseLoadFailed(final Throwable cause) {
-    // VIOLACIÓN Regla 10: texto de error hardcodeado directamente.
-    // Debe usarse una constante con nombre descriptivo en lugar de un String literal.
-    return new ConfigurationException("Failed to load the application configuration.", cause);
+    return new ConfigurationException(MSG_LOAD_FAILED, cause);
   }
 }
