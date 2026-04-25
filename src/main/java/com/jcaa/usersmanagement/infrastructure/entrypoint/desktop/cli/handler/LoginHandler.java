@@ -7,9 +7,8 @@ import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.Use
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.LoginRequest;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 
-@Log
+// Regla 6: eliminado @Log — ya no se loguea nada en este handler
 @RequiredArgsConstructor
 public final class LoginHandler implements OperationHandler {
 
@@ -26,9 +25,7 @@ public final class LoginHandler implements OperationHandler {
       console.println("\n  Login successful. Welcome!");
       printer.print(user);
     } catch (final InvalidCredentialsException exception) {
-      // VIOLACIÓN Regla 6: se loguea el email del usuario (PII) al registrar el fallo de login.
-      // Los datos de negocio/cliente son PII y NO deben loguearse nunca.
-      log.warning("Intento de login fallido para email: " + email);
+      // Regla 6: eliminado log con PII (email) — solo se muestra el mensaje al usuario
       console.println("  Error: " + exception.getMessage());
     }
   }
