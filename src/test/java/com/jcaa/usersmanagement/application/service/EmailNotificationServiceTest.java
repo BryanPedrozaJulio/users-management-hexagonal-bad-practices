@@ -25,7 +25,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-// VIOLACIÓN Regla 11: se eliminó el javadoc de la clase que documentaba los casos cubiertos.
+/**
+ * Regla 11: javadoc documentando los casos cubiertos por esta clase de test.
+ *
+ * Casos cubiertos:
+ * - notifyUserCreated() envía al email y asunto correctos
+ * - notifyUserUpdated() envía al email y asunto correctos
+ * - notifyUserCreated() re-lanza EmailSenderException cuando el puerto falla
+ * - notifyUserUpdated() re-lanza EmailSenderException cuando el puerto falla
+ * - loadTemplate() lanza EmailSenderException cuando el template no existe
+ * - loadTemplate() lanza EmailSenderException cuando ocurre IOException
+ * - renderTemplate() sustituye todos los tokens correctamente
+ */
 @DisplayName("EmailNotificationService")
 @ExtendWith(MockitoExtension.class)
 class EmailNotificationServiceTest {
@@ -36,42 +47,45 @@ class EmailNotificationServiceTest {
   private EmailNotificationService service;
   private EmailNotificationService serviceSpy;
 
-  private static final String EMAIL = "john@example.com";
-  private static final String NAME = "John Arrieta";
-  private static final String PASSWORD = "SecurePass1";
+  private static final String EMAIL            = "john@example.com";
+  private static final String NAME             = "John Arrieta";
+  private static final String PASSWORD         = "SecurePass1";
   private static final String TEMPLATE_CONTENT =
-      "<html>{{name}} {{email}} {{password}} {{role}} {{status}}</html>";
+          "<html>{{name}} {{email}} {{password}} {{role}} {{status}}</html>";
 
   private UserModel user;
 
   @BeforeEach
   void setUp() {
-    service = new EmailNotificationService(emailSenderPort);
+    service    = new EmailNotificationService(emailSenderPort);
     serviceSpy = spy(new EmailNotificationService(spyEmailSenderPort));
 
     user =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName(NAME),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.ADMIN,
-            UserStatus.ACTIVE);
+            new UserModel(
+                    new UserId("u-001"),
+                    new UserName(NAME),
+                    new UserEmail(EMAIL),
+                    UserPassword.fromPlainText(PASSWORD),
+                    UserRole.ADMIN,
+                    UserStatus.ACTIVE);
   }
 
   // ── notifyUserCreated() — flujo feliz
 
-  // VIOLACIÓN Regla 11: falta @DisplayName en el método.
   @Test
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("notifyUserCreated() invoca el puerto con el email y asunto correctos")
   void shouldSendCreatedNotificationToCorrectEmail() {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios Arrange–Act–Assert.
+    // Act
     service.notifyUserCreated(user, PASSWORD);
+
+    // Assert
     verify(emailSenderPort)
-        .send(
-            argThat(
-                dest ->
-                    EMAIL.equals(dest.getDestinationEmail())
-                        && dest.getSubject().contains("creada")));
+            .send(
+                    argThat(
+                            dest ->
+                                    EMAIL.equals(dest.getDestinationEmail())
+                                            && dest.getSubject().contains("creada")));
   }
 
   // ── notifyUserUpdated() — flujo feliz
@@ -84,11 +98,11 @@ class EmailNotificationServiceTest {
 
     // Assert
     verify(emailSenderPort)
-        .send(
-            argThat(
-                dest ->
-                    EMAIL.equals(dest.getDestinationEmail())
-                        && dest.getSubject().contains("actualizada")));
+            .send(
+                    argThat(
+                            dest ->
+                                    EMAIL.equals(dest.getDestinationEmail())
+                                            && dest.getSubject().contains("actualizada")));
   }
 
   // ── re-lanzar EmailSenderException en notifyUserCreated
@@ -98,7 +112,7 @@ class EmailNotificationServiceTest {
   void shouldRethrowEmailSenderExceptionOnCreate() {
     // Arrange
     final EmailSenderException cause =
-        EmailSenderException.becauseSmtpFailed(EMAIL, "Connection refused");
+            EmailSenderException.becauseSmtpFailed(EMAIL, "Connection refused");
     doThrow(cause).when(emailSenderPort).send(any());
 
     // Act & Assert
@@ -112,7 +126,7 @@ class EmailNotificationServiceTest {
   void shouldRethrowEmailSenderExceptionOnUpdate() {
     // Arrange
     final EmailSenderException cause =
-        EmailSenderException.becauseSmtpFailed(EMAIL, "Connection refused");
+            EmailSenderException.becauseSmtpFailed(EMAIL, "Connection refused");
     doThrow(cause).when(emailSenderPort).send(any());
 
     // Act & Assert
@@ -122,10 +136,9 @@ class EmailNotificationServiceTest {
   // ── loadTemplate() — rama: template no encontrado (is == null)
 
   @Test
-  @DisplayName(
-      "loadTemplate() lanza EmailSenderException cuando el template no existe en classpath")
+  @DisplayName("loadTemplate() lanza EmailSenderException cuando el template no existe en classpath")
   void shouldThrowWhenTemplateNotFound() {
-    // Arrange — openResourceStream retorna null simulando template ausente en classpath
+    // Arrange
     doReturn(null).when(serviceSpy).openResourceStream(any());
 
     // Act & Assert
@@ -135,10 +148,9 @@ class EmailNotificationServiceTest {
   // ── loadTemplate() — rama: IOException al leer el stream
 
   @Test
-  @DisplayName(
-      "loadTemplate() lanza EmailSenderException cuando ocurre IOException al leer el stream")
+  @DisplayName("loadTemplate() lanza EmailSenderException cuando ocurre IOException al leer el stream")
   void shouldThrowWhenTemplateThrowsIOException() throws IOException {
-    // Arrange — stream que lanza IOException al invocar readAllBytes()
+    // Arrange
     final InputStream brokenStream = mock(InputStream.class);
     doThrow(new IOException("Disk error")).when(brokenStream).readAllBytes();
     doReturn(brokenStream).when(serviceSpy).openResourceStream(any());
@@ -152,16 +164,16 @@ class EmailNotificationServiceTest {
   @Test
   @DisplayName("renderTemplate() sustituye todos los tokens del template correctamente")
   void shouldRenderAllTokensInTemplate() {
-    // Arrange — template propio con todos los tokens del método notifyUserCreated
+    // Arrange
     final InputStream templateStream =
-        new ByteArrayInputStream(TEMPLATE_CONTENT.getBytes(StandardCharsets.UTF_8));
+            new ByteArrayInputStream(TEMPLATE_CONTENT.getBytes(StandardCharsets.UTF_8));
     doReturn(templateStream).when(serviceSpy).openResourceStream(any());
 
     // Act
     serviceSpy.notifyUserCreated(user, PASSWORD);
 
-    // Assert — el body enviado contiene los valores interpolados
+    // Assert
     verify(spyEmailSenderPort)
-        .send(argThat(dest -> dest.getBody().contains(NAME) && dest.getBody().contains(EMAIL)));
+            .send(argThat(dest -> dest.getBody().contains(NAME) && dest.getBody().contains(EMAIL)));
   }
 }
