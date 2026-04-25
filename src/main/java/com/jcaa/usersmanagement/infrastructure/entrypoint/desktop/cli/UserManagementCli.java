@@ -20,10 +20,10 @@ import lombok.RequiredArgsConstructor;
 public final class UserManagementCli {
 
   private static final String BANNER =
-      """
-      ==========================================
-           Users Management System
-      ==========================================""";
+          """
+          ==========================================
+               Users Management System
+          ==========================================""";
 
   private static final String MENU_BORDER = "  ==========================================";
 
@@ -55,13 +55,13 @@ public final class UserManagementCli {
   }
 
   private void executeHandler(
-      final Map<MenuOption, OperationHandler> handlers, final MenuOption option) {
+          final Map<MenuOption, OperationHandler> handlers, final MenuOption option) {
     try {
       handlers.get(option).handle();
     } catch (final ConstraintViolationException exception) {
       console.println("  Validation errors:");
       exception.getConstraintViolations()
-          .forEach(violation -> console.println("    - " + violation.getMessage()));
+              .forEach(violation -> console.println("    - " + violation.getMessage()));
     } catch (final RuntimeException exception) {
       console.println("  Unexpected error: " + exception.getMessage());
     }
@@ -69,25 +69,24 @@ public final class UserManagementCli {
 
   private Map<MenuOption, OperationHandler> buildHandlers(final UserResponsePrinter printer) {
     return Map.of(
-        MenuOption.LIST_USERS,  new ListUsersHandler(userController, printer),
-        MenuOption.FIND_USER,   new FindUserByIdHandler(userController, console, printer),
-        MenuOption.CREATE_USER, new CreateUserHandler(userController, console, printer),
-        MenuOption.UPDATE_USER, new UpdateUserHandler(userController, console, printer),
-        MenuOption.DELETE_USER, new DeleteUserHandler(userController, console),
-        MenuOption.LOGIN,       new LoginHandler(userController, console, printer));
+            MenuOption.LIST_USERS,  new ListUsersHandler(userController, printer),
+            MenuOption.FIND_USER,   new FindUserByIdHandler(userController, console, printer),
+            MenuOption.CREATE_USER, new CreateUserHandler(userController, console, printer),
+            MenuOption.UPDATE_USER, new UpdateUserHandler(userController, console, printer),
+            MenuOption.DELETE_USER, new DeleteUserHandler(userController, console),
+            MenuOption.LOGIN,       new LoginHandler(userController, console, printer));
   }
 
   private void printMenu() {
     console.println();
-    // VIOLACIÓN Regla 10: se usa el String literal "==================..." hardcodeado directamente
-    // en vez de reutilizar la constante MENU_BORDER que ya está definida en la misma clase.
-    console.println("  ==========================================");
+    // Regla 10: reemplazados String literals por la constante MENU_BORDER ya definida
+    console.println(MENU_BORDER);
     console.println("    Main Menu");
-    console.println("  ==========================================");
-    // VIOLACIÓN Regla 4: nombre abreviado "opt" en lugar del nombre descriptivo "option".
-    for (final MenuOption opt : MenuOption.values()) {
-      console.printf("    [%d] %s%n", opt.getNumber(), opt.getDescription());
+    console.println(MENU_BORDER);
+    // Regla 4: renombrado "opt" → "option" — nombre descriptivo sin abreviatura
+    for (final MenuOption option : MenuOption.values()) {
+      console.printf("    [%d] %s%n", option.getNumber(), option.getDescription());
     }
-    console.println("  ==========================================");
+    console.println(MENU_BORDER);
   }
 }
