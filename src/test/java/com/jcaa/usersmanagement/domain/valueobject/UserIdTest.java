@@ -3,32 +3,45 @@ package com.jcaa.usersmanagement.domain.valueobject;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.jcaa.usersmanagement.domain.exception.InvalidUserIdException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-// VIOLACIÓN Regla 11: se eliminó @DisplayName de la clase y de todos los métodos.
-// Los tests deben tener nombres descriptivos con @DisplayName para documentar el comportamiento.
+// Regla 11: agregado @DisplayName a la clase
+@DisplayName("UserId")
 class UserIdTest {
 
   @ParameterizedTest
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should create UserId with trimmed value when input has surrounding whitespace")
   @ValueSource(strings = {" user123 ", "  user123  ", "user123\t"})
-  void shouldCreateUserIdWithTrimmedValue(String input) {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios Arrange–Act–Assert.
-    final String correctUserId = "user123";
+  void shouldCreateUserIdWithTrimmedValue(final String input) {
+    // Arrange
+    final String expectedValue = "user123";
+
+    // Act
     final UserId userId = new UserId(input);
-    // VIOLACIÓN Regla 11: se usa assertTrue(x.equals(y)) en lugar de assertEquals(x, y).
-    assertTrue(correctUserId.equals(userId.toString()));
+
+    // Assert
+    // Regla 11: reemplazado assertTrue(x.equals(y)) por assertEquals(x, y)
+    assertEquals(expectedValue, userId.toString());
   }
 
   @Test
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should throw NullPointerException when value is null")
   void shouldThrowNullPointerExceptionWhenUserIdIsNull() {
+    // Act & Assert
     assertThrows(NullPointerException.class, () -> new UserId(null));
   }
 
   @ParameterizedTest
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should throw InvalidUserIdException when value is blank or empty")
   @ValueSource(strings = {"", "   ", "\t", "\n", "\r", "\f", "\b"})
-  void shouldThrowIllegalArgumentExceptionWhenUserIdIsEmpty(String input) {
+  void shouldThrowIllegalArgumentExceptionWhenUserIdIsEmpty(final String input) {
+    // Act & Assert
     assertThrows(InvalidUserIdException.class, () -> new UserId(input));
   }
 }
