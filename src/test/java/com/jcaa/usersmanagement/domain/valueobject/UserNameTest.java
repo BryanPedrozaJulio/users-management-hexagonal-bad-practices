@@ -3,34 +3,48 @@ package com.jcaa.usersmanagement.domain.valueobject;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.jcaa.usersmanagement.domain.exception.InvalidUserNameException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-// VIOLACIÓN Regla 11: se eliminó @DisplayName de la clase y de todos los métodos.
+// Regla 11: agregado @DisplayName a la clase
+@DisplayName("UserName")
 class UserNameTest {
 
   @ParameterizedTest
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should create UserName with trimmed value when input has surrounding whitespace")
   @ValueSource(strings = {"John Arrieta", "   John Arrieta   ", "John Arrieta \t"})
   void shouldValidateUserNameMinimumLength(final String userName) {
-    // VIOLACIÓN Regla 11: se eliminaron comentarios Arrange–Act–Assert.
-    // VIOLACIÓN Regla 11: assertTrue(x.equals(y)) en lugar de assertEquals(x, y).
-    final String correctUserName = "John Arrieta";
+    // Arrange
+    final String expectedValue = "John Arrieta";
+
+    // Act
     final UserName userNameVo = new UserName(userName);
-    assertTrue(correctUserName.equals(userNameVo.toString()));
+
+    // Assert
+    // Regla 11: reemplazado assertTrue(x.equals(y)) por assertEquals(x, y)
+    assertEquals(expectedValue, userNameVo.toString());
   }
 
-  // -- Flujo con excepciones y ramas de validación ---
+  // ── flujo con excepciones y ramas de validación
 
   @Test
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should throw NullPointerException when value is null")
   void shouldValidateUserNameIsNotNull() {
+    // Act & Assert
     assertThrows(NullPointerException.class, () -> new UserName(null));
   }
 
   @ParameterizedTest
+  // Regla 11: agregado @DisplayName descriptivo
+  @DisplayName("should throw InvalidUserNameException when value is blank or shorter than minimum length")
   @ValueSource(
-      strings = {"", "  ", "\t", "\n", "\r", "\f", "\b", "Jo", "Ty  ", "", "   Cy ", "Ed\t"})
+          strings = {"", "  ", "\t", "\n", "\r", "\f", "\b", "Jo", "Ty  ", "", "   Cy ", "Ed\t"})
   void shouldValidateUserNameIsNotEmptyAndMinimumLength(final String userName) {
+    // Act & Assert
     assertThrows(InvalidUserNameException.class, () -> new UserName(userName));
   }
 }
